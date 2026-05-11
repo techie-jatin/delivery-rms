@@ -5,17 +5,17 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout          from './components/layout/Layout.jsx';
 import Home            from './pages/Home.jsx';
+import Login           from './pages/Login.jsx';
+import Register        from './pages/Register.jsx';
 import AdminZoneEditor from './pages/AdminZoneEditor.jsx';
 
-const Category    = () => <Stub name="Category"    phase="3.2" />;
+const Category    = () => <Stub name="Category"    phase="3.3" />;
 const Product     = () => <Stub name="Product"     phase="3.3" />;
 const Cart        = () => <Stub name="Cart"        phase="3.4" />;
 const Checkout    = () => <Stub name="Checkout"    phase="3.4" />;
 const Orders      = () => <Stub name="Orders"      phase="3.6" />;
 const OrderDetail = () => <Stub name="OrderDetail" phase="3.6" />;
 const Profile     = () => <Stub name="Profile"     phase="3.5" />;
-const Login       = () => <Stub name="Login"       phase="3.5" />;
-const Register    = () => <Stub name="Register"    phase="3.5" />;
 const AdminDashboard = () => <Stub name="Admin Dashboard" phase="4.1" />;
 
 function Stub({ name, phase }) {
