@@ -1,18 +1,14 @@
-/**
- * App.jsx — Router root with Layout wrapping all customer pages.
- */
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout          from './components/layout/Layout.jsx';
 import Home            from './pages/Home.jsx';
 import Login           from './pages/Login.jsx';
 import Register        from './pages/Register.jsx';
+import Cart            from './pages/Cart.jsx';
+import Checkout        from './pages/Checkout.jsx';
 import AdminZoneEditor from './pages/AdminZoneEditor.jsx';
 
 const Category    = () => <Stub name="Category"    phase="3.3" />;
 const Product     = () => <Stub name="Product"     phase="3.3" />;
-const Cart        = () => <Stub name="Cart"        phase="3.4" />;
-const Checkout    = () => <Stub name="Checkout"    phase="3.4" />;
 const Orders      = () => <Stub name="Orders"      phase="3.6" />;
 const OrderDetail = () => <Stub name="OrderDetail" phase="3.6" />;
 const Profile     = () => <Stub name="Profile"     phase="3.5" />;
