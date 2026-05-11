@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Delivery RMS</title>
+  <script>
+    // GitHub Pages SPA fix: redirect 404s back to index.html
+    // preserving the path as a query param, then React Router handles it.
+    var path = window.location.pathname;
+    var base = '/delivery-rms';
+    var rest = path.replace(base, '') || '/';
+    window.location.replace(base + '/?p=' + encodeURIComponent(rest));
+  </script>
+</head>
+<body></body>
+</html>

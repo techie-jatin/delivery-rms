@@ -1,0 +1,273 @@
+/* GeoLocationPicker.css
+ * Matches the original GeoPin dark aesthetic from geolocation_map_picker.html
+ * Uses CSS custom properties so it inherits from the app theme.
+ * ─────────────────────────────────────────────────────────────── */
+
+.geopin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: var(--font-sans, 'Syne', sans-serif);
+}
+
+/* ── Header ── */
+.geopin__header { text-align: center; }
+
+.geopin__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  /* Gradient text — matches original GeoPin */
+  background: linear-gradient(135deg, #00e5a0 0%, #00b4d8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.geopin__sub {
+  color: #6b6b88;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* ── Detect button ── */
+.geopin__detect-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #00e5a0;
+  color: #0a0a0f;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.geopin__detect-btn:hover:not(:disabled) {
+  background: #00ffb3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 229, 160, 0.35);
+}
+
+.geopin__detect-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Spinner ── */
+.geopin__spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(10, 10, 15, 0.3);
+  border-top-color: #0a0a0f;
+  border-radius: 50%;
+  animation: geopin-spin 0.6s linear infinite;
+}
+
+@keyframes geopin-spin { to { transform: rotate(360deg); } }
+
+/* ── Error ── */
+.geopin__error {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: #ff4d6d;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+/* ── Map wrapper ── */
+.geopin__map-wrap {
+  display: none;
+  width: 100%;
+  height: 320px;
+  border-radius: 12px;
+  border: 1px solid #2a2a38;
+  overflow: hidden;
+  position: relative;
+  background: #13131a;
+}
+
+.geopin__map-wrap--visible { display: block; }
+
+.geopin__map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Map hint ── */
+.geopin__hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #00e5a0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  z-index: 500;
+  pointer-events: none;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(0, 229, 160, 0.2);
+  transition: opacity 0.8s ease;
+}
+
+.geopin__hint--fade { opacity: 0; }
+
+/* ── Coordinate card ── */
+.geopin__coord-card {
+  width: 100%;
+  background: #13131a;
+  border: 1px solid #2a2a38;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.geopin__coord-row {
+  display: flex;
+  gap: 12px;
+}
+
+.geopin__coord-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #2a2a38;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.geopin__coord-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  color: #6b6b88;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+.geopin__coord-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00e5a0;
+  letter-spacing: -0.01em;
+}
+
+/* ── Service status ── */
+.geopin__service {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+.geopin__service--ok {
+  background: rgba(0, 229, 160, 0.08);
+  border: 1px solid rgba(0, 229, 160, 0.25);
+  color: #00e5a0;
+}
+
+.geopin__service--err {
+  background: rgba(255, 77, 109, 0.08);
+  border: 1px solid rgba(255, 77, 109, 0.25);
+  color: #ff4d6d;
+}
+
+.geopin__service-icon {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Button group ── */
+.geopin__btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.geopin__btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  border: none;
+}
+
+.geopin__btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f0f0f8;
+  border: 1px solid #2a2a38;
+}
+
+.geopin__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.geopin__btn--primary {
+  background: #ff4d6d;
+  color: #fff;
+}
+
+.geopin__btn--primary:hover:not(:disabled) {
+  background: #ff6b85;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255, 77, 109, 0.3);
+}
+
+.geopin__btn--primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Out of range notice ── */
+.geopin__out-of-range {
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(255, 77, 109, 0.06);
+  border: 1px solid rgba(255, 77, 109, 0.2);
+  border-radius: 10px;
+  text-align: center;
+  color: #ff4d6d;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.geopin__out-of-range-sub {
+  color: #6b6b88;
+  font-size: 0.68rem;
+  margin-top: 4px;
+}
