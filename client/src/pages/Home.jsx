@@ -92,9 +92,11 @@ export default function Home() {
           <div className="home-empty"><p>No products found.</p></div>
         ) : (
           <div className="home-grid">
-            {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {visibleProducts.flatMap((product) =>
+              product.variants.map((variant) => (
+                <ProductCard key={variant.id} product={product} variant={variant} />
+              ))
+            )}
           </div>
         )}
       </div>

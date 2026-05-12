@@ -9,6 +9,7 @@ import Orders           from './pages/Orders.jsx';
 import Profile          from './pages/Profile.jsx';
 import AdminDashboard   from './pages/admin/AdminDashboard.jsx';
 import AdminOrders      from './pages/admin/AdminOrders.jsx';
+import AdminProducts    from './pages/admin/AdminProducts.jsx';
 import AdminZoneEditor  from './pages/AdminZoneEditor.jsx';
 
 const Category    = () => <Stub name="Category"    phase="3.3" />;
@@ -37,14 +38,11 @@ export default function App() {
   return (
     <BrowserRouter basename="/delivery-rms">
       <Routes>
-        {/* Admin routes */}
         <Route path="/admin"          element={<AdminDashboard />} />
         <Route path="/admin/orders"   element={<AdminOrders />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/zones"    element={<AdminZoneEditor />} />
-        <Route path="/admin/products" element={<Stub name="Admin Products" phase="4.2" />} />
-        <Route path="/admin/outlets"  element={<Stub name="Admin Outlets"  phase="4.4" />} />
-
-        {/* Customer routes */}
+        <Route path="/admin/outlets"  element={<Stub name="Admin Outlets" phase="4.4" />} />
         <Route path="/*" element={
           <Layout>
             <Routes>

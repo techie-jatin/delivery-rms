@@ -9,12 +9,12 @@ import { useAuth } from '../../hooks/useAuth.jsx';
 import { useCart } from '../../hooks/useCart.jsx';
 import './ProductCard.css';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, variant: variantProp }) {
   const { token } = useAuth();
   const { items, addItem, updateItem } = useCart();
 
-  // Use the first active variant as default
-  const variant = product.variants?.[0];
+  // Use passed variant prop, or fall back to first variant
+  const variant = variantProp || product.variants?.[0];
   if (!variant) return null;
 
   // Check if this variant is already in cart
