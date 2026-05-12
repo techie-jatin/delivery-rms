@@ -147,7 +147,7 @@ router.post('/', requireAuth, async (req, res) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const orders = await db('orders')
-      .where({ user_id: req.user.id })
+  .where(req.user.role === 'admin' ? {} : { user_id: req.user.id })
       .orderBy('created_at', 'desc')
       .select('*');
 
