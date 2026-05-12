@@ -6,12 +6,12 @@ import Register        from './pages/Register.jsx';
 import Cart            from './pages/Cart.jsx';
 import Checkout        from './pages/Checkout.jsx';
 import Orders          from './pages/Orders.jsx';
+import Profile         from './pages/Profile.jsx';
 import AdminZoneEditor from './pages/AdminZoneEditor.jsx';
 
 const Category    = () => <Stub name="Category"    phase="3.3" />;
 const Product     = () => <Stub name="Product"     phase="3.3" />;
 const OrderDetail = () => <Stub name="OrderDetail" phase="3.6" />;
-const Profile     = () => <Stub name="Profile"     phase="3.5" />;
 const AdminDashboard = () => <Stub name="Admin Dashboard" phase="4.1" />;
 
 function Stub({ name, phase }) {
