@@ -8,13 +8,13 @@ import Cart             from './pages/Cart.jsx';
 import Checkout         from './pages/Checkout.jsx';
 import Orders           from './pages/Orders.jsx';
 import Profile          from './pages/Profile.jsx';
+import ProductDetail    from './pages/ProductDetail.jsx';
 import AdminDashboard   from './pages/admin/AdminDashboard.jsx';
 import AdminOrders      from './pages/admin/AdminOrders.jsx';
 import AdminProducts    from './pages/admin/AdminProducts.jsx';
 import AdminZoneEditor  from './pages/AdminZoneEditor.jsx';
 
-const Category    = () => <Stub name="Category"    phase="3.3" />;
-const Product     = () => <Stub name="Product"     phase="3.3" />;
+const Category    = () => <Stub name="Category" phase="3.3" />;
 const OrderDetail = () => <Stub name="OrderDetail" phase="3.6" />;
 
 function Stub({ name, phase }) {
@@ -39,30 +39,24 @@ export default function App() {
   return (
     <BrowserRouter basename="/delivery-rms">
       <Routes>
-        {/* Admin routes — no Layout */}
         <Route path="/admin"          element={<AdminDashboard />} />
         <Route path="/admin/orders"   element={<AdminOrders />} />
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/zones"    element={<AdminZoneEditor />} />
         <Route path="/admin/outlets"  element={<Stub name="Admin Outlets" phase="4.4" />} />
-
-        {/* Customer routes — wrapped in Layout */}
         <Route path="/*" element={
           <Layout>
             <Routes>
               <Route path="/"               element={<Home />} />
               <Route path="/category/:slug" element={<Category />} />
-              <Route path="/product/:slug"  element={<Product />} />
+              <Route path="/product/:slug"  element={<ProductDetail />} />
               <Route path="/login"          element={<Login />} />
               <Route path="/register"       element={<Register />} />
-
-              {/* Protected routes — redirect to /login if not logged in */}
               <Route path="/cart"      element={<ProtectedRoute><Cart /></ProtectedRoute>} />
               <Route path="/checkout"  element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
               <Route path="/orders"    element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
               <Route path="/profile"   element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-
               <Route path="*" element={<Stub name="404" phase="—" />} />
             </Routes>
           </Layout>

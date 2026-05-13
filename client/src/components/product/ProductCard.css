@@ -198,3 +198,33 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
+
+/* ── Product name link ── */
+.pcard__name--link {
+  text-decoration: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.pcard__name--link:hover {
+  color: var(--color-accent);
+}
+
+/* ── Clickable name + image link ── */
+.pcard__name--link {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pcard__name--link:hover {
+  color: var(--color-accent);
+}
+
+/* Make image-wrap work as a link (display stays the same) */
+a.pcard__img-wrap {
+  display: block;
+  text-decoration: none;
+}

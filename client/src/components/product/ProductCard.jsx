@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import { useCart } from '../../hooks/useCart.jsx';
 import './ProductCard.css';
@@ -66,20 +67,20 @@ export default function ProductCard({ product, variant: variantProp }) {
 
   return (
     <div className="pcard">
-      {/* Image */}
-      <div className="pcard__img-wrap">
+      {/* Image — click to open product detail */}
+      <Link to={`/product/${product.slug}`} className="pcard__img-wrap">
         {variant.image_url
           ? <img src={variant.image_url} alt={product.name} className="pcard__img" />
           : <div className="pcard__img-placeholder">🛒</div>
         }
         {discount && <span className="pcard__discount">{discount}% off</span>}
         {isLowStock && <span className="pcard__low-stock">Only {variant.stock} left</span>}
-      </div>
+      </Link>
 
       {/* Info */}
       <div className="pcard__body">
         <div className="pcard__brand">{product.brand}</div>
-        <div className="pcard__name">{product.name}</div>
+        <Link to={`/product/${product.slug}`} className="pcard__name pcard__name--link">{product.name}</Link>
         <div className="pcard__unit">{variant.name} {variant.unit}</div>
 
         <div className="pcard__price-row">
