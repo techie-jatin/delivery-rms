@@ -1,18 +1,22 @@
 /**
  * client/src/pages/Login.jsx
  * Phase 3.5 — Login screen
+ * Redirects back to intended page after login.
  */
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useCart } from '../hooks/useCart.jsx';
 import './Auth.css';
 
 export default function Login() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const { login, token } = useAuth();
   const { fetchCart }    = useCart();
+
+  const from = location.state?.from || '/';
 
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +30,7 @@ export default function Login() {
     try {
       await login(email, password);
       await fetchCart(token);
-      navigate('/');
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,31 +47,15 @@ export default function Login() {
         <form className="auth__form" onSubmit={handleSubmit}>
           <div className="auth__field">
             <label className="auth__label">Email</label>
-            <input
-              className="auth__input"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoFocus
-            />
+            <input className="auth__input" type="email" placeholder="you@example.com"
+              value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
           </div>
-
           <div className="auth__field">
             <label className="auth__label">Password</label>
-            <input
-              className="auth__input"
-              type="password"
-              placeholder="••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <input className="auth__input" type="password" placeholder="••••••"
+              value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
-
           {error && <p className="auth__error">{error}</p>}
-
           <button className="auth__btn" type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>

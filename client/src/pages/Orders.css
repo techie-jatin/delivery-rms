@@ -241,3 +241,30 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Reorder button ── */
+.order-reorder-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.order-reorder-btn:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: #0a0a0f;
+}
+
+.order-reorder-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

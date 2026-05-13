@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout           from './components/layout/Layout.jsx';
+import ProtectedRoute   from './components/layout/ProtectedRoute.jsx';
 import Home             from './pages/Home.jsx';
 import Login            from './pages/Login.jsx';
 import Register         from './pages/Register.jsx';
@@ -38,25 +39,31 @@ export default function App() {
   return (
     <BrowserRouter basename="/delivery-rms">
       <Routes>
+        {/* Admin routes — no Layout */}
         <Route path="/admin"          element={<AdminDashboard />} />
         <Route path="/admin/orders"   element={<AdminOrders />} />
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/zones"    element={<AdminZoneEditor />} />
         <Route path="/admin/outlets"  element={<Stub name="Admin Outlets" phase="4.4" />} />
+
+        {/* Customer routes — wrapped in Layout */}
         <Route path="/*" element={
           <Layout>
             <Routes>
               <Route path="/"               element={<Home />} />
               <Route path="/category/:slug" element={<Category />} />
               <Route path="/product/:slug"  element={<Product />} />
-              <Route path="/cart"           element={<Cart />} />
-              <Route path="/checkout"       element={<Checkout />} />
-              <Route path="/orders"         element={<Orders />} />
-              <Route path="/orders/:id"     element={<OrderDetail />} />
-              <Route path="/profile"        element={<Profile />} />
               <Route path="/login"          element={<Login />} />
               <Route path="/register"       element={<Register />} />
-              <Route path="*"              element={<Stub name="404" phase="—" />} />
+
+              {/* Protected routes — redirect to /login if not logged in */}
+              <Route path="/cart"      element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/checkout"  element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              <Route path="/orders"    element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+              <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+              <Route path="/profile"   element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+              <Route path="*" element={<Stub name="404" phase="—" />} />
             </Routes>
           </Layout>
         } />

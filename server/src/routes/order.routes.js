@@ -147,11 +147,28 @@ router.post('/', requireAuth, async (req, res) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const orders = await db('orders')
-  .where(req.user.role === 'admin' ? {} : { user_id: req.user.id })
+      .where(req.user.role === 'admin' ? {} : { user_id: req.user.id })
       .orderBy('created_at', 'desc')
       .select('*');
 
-    return res.json({ orders });
+    // Attach items to each order (needed for reorder feature)
+    const orderIds = orders.map((o) => o.id);
+    const allItems = orderIds.length
+      ? await db('order_items').whereIn('order_id', orderIds)
+      : [];
+
+    const itemsByOrder = {};
+    for (const item of allItems) {
+      if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
+      itemsByOrder[item.order_id].push(item);
+    }
+
+    const ordersWithItems = orders.map((o) => ({
+      ...o,
+      items: itemsByOrder[o.id] || [],
+    }));
+
+    return res.json({ orders: ordersWithItems });
   } catch (err) {
     console.error('[orders/list]', err);
     return res.status(500).json({ error: 'Internal server error.' });
