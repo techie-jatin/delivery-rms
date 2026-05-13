@@ -8,6 +8,7 @@ import GeoLocationPicker from '../components/geo/GeoLocationPicker.jsx';
 import ProductCard from '../components/product/ProductCard.jsx';
 import { fetchOutlets } from '../services/api/outlets';
 import { fetchProducts, fetchCategories } from '../services/api/products';
+import HomeBanner from '../components/ui/HomeBanner.jsx';
 import './Home.css';
 
 export default function Home() {
@@ -67,6 +68,9 @@ export default function Home() {
           </div>
           <button className="home-banner__change" onClick={() => setConfirmed(null)}>Change</button>
         </div>
+
+        {/* Festival banners */}
+        <HomeBanner />
 
         {categories.length > 0 && (
           <div className="home-categories">

@@ -1,0 +1,83 @@
+/* AdminBanners.css */
+
+.admb-form { display: flex; flex-direction: column; gap: 16px; }
+
+.admb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 480px) { .admb-grid { grid-template-columns: 1fr; } }
+
+.admb-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admb-color-row input[type="color"] {
+  width: 40px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 2px;
+  background: var(--color-surface);
+}
+
+.admb-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+}
+
+.admb-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ── Banner list ── */
+.admb-list { display: flex; flex-direction: column; gap: 10px; }
+
+.admb-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.admb-card__preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admb-live {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.2);
+  letter-spacing: 0.1em;
+}
+
+.admb-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admb-card__actions { display: flex; gap: 8px; }
