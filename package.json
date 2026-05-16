@@ -1,0 +1,14 @@
+{
+  "name": "delivery-rms",
+  "version": "1.0.0",
+  "description": "Delivery RMS — monorepo root",
+  "scripts": {
+    "install": "cd server && npm install",
+    "build": "cd server && npm install",
+    "start": "cd server && node src/index.js",
+    "db:migrate": "cd server && npm run db:migrate"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
