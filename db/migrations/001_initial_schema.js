@@ -1,18 +1,13 @@
 /**
  * db/migrations/001_initial_schema.js
- * ─────────────────────────────────────────────────────────────────
- * Creates all core tables for Phase 1.
- * PostGIS extension must be installed on the database.
  *
- * Run: npm run db:migrate
- * Rollback: npm run db:rollback
- * ─────────────────────────────────────────────────────────────────
+ * PostGIS-free version for Railway deployment.
+ * delivery_zone stored as JSONB instead of PostGIS geometry.
+ * Zone checks use Haversine + ray-casting in application code (deliveryZone.js).
+ * PostGIS geometry column added back when moving to VPS (see docs/GEO_SWITCH.md).
  */
 
 exports.up = async function (knex) {
-
-  // ── Enable PostGIS ────────────────────────────────────────────
-  await knex.raw('CREATE EXTENSION IF NOT EXISTS postgis');
 
   // ── users ─────────────────────────────────────────────────────
   await knex.schema.createTable('users', (t) => {
@@ -23,33 +18,22 @@ exports.up = async function (knex) {
     t.string('password_hash').notNullable();
     t.enu('role', ['customer', 'admin']).notNullable().defaultTo('customer');
     t.boolean('is_active').notNullable().defaultTo(true);
-    t.timestamps(true, true); // created_at, updated_at
+    t.timestamps(true, true);
   });
 
   // ── outlets ───────────────────────────────────────────────────
-  // One outlet = one dark store / warehouse / shop
   await knex.schema.createTable('outlets', (t) => {
     t.increments('id').primary();
     t.string('name').notNullable();
     t.string('address').notNullable();
     t.decimal('lat', 10, 7).notNullable();
     t.decimal('lng', 10, 7).notNullable();
-    t.decimal('delivery_radius_km', 5, 2).defaultTo(5); // fallback if no polygon
-    t.decimal('free_delivery_above', 8, 2).defaultTo(499); // cart total for free delivery
+    t.decimal('delivery_radius_km', 5, 2).defaultTo(5);
+    t.decimal('free_delivery_above', 8, 2).defaultTo(499);
+    t.jsonb('delivery_zone');   // GeoJSON polygon stored as JSONB (no PostGIS needed)
     t.boolean('is_active').notNullable().defaultTo(true);
     t.timestamps(true, true);
   });
-
-  // delivery_zone: PostGIS GEOMETRY column — added separately
-  // (Knex doesn't have a built-in type for PostGIS geometry)
-  await knex.raw(`
-    ALTER TABLE outlets
-    ADD COLUMN delivery_zone geometry(Polygon, 4326)
-  `);
-  await knex.raw(`
-    CREATE INDEX idx_outlets_delivery_zone
-    ON outlets USING GIST (delivery_zone)
-  `);
 
   // ── product_categories ────────────────────────────────────────
   await knex.schema.createTable('product_categories', (t) => {
@@ -76,30 +60,28 @@ exports.up = async function (knex) {
   });
 
   // ── product_variants ──────────────────────────────────────────
-  // Each variant = one purchasable unit (e.g. Horlicks 500g, Horlicks 1kg)
   await knex.schema.createTable('product_variants', (t) => {
     t.increments('id').primary();
     t.integer('product_id').notNullable().references('id').inTable('products').onDelete('CASCADE');
-    t.string('name').notNullable();           // e.g. "500g", "1kg"
+    t.string('name').notNullable();
     t.string('sku').notNullable().unique();
     t.decimal('price', 10, 2).notNullable();
-    t.decimal('mrp', 10, 2);                  // max retail price (for showing discount)
+    t.decimal('mrp', 10, 2);
     t.integer('stock').notNullable().defaultTo(0);
-    t.integer('max_qty_per_order').notNullable().defaultTo(10); // THE quantity limit
-    t.string('unit');                          // e.g. "g", "kg", "ml", "pcs"
+    t.integer('max_qty_per_order').notNullable().defaultTo(10);
+    t.string('unit');
     t.string('image_url');
     t.boolean('is_active').notNullable().defaultTo(true);
     t.timestamps(true, true);
   });
 
   // ── carts ─────────────────────────────────────────────────────
-  // One active cart per user. Recreated fresh after order placed.
   await knex.schema.createTable('carts', (t) => {
     t.increments('id').primary();
     t.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
-    t.integer('outlet_id').references('id').inTable('outlets'); // which outlet serves this cart
+    t.integer('outlet_id').references('id').inTable('outlets');
     t.timestamps(true, true);
-    t.unique('user_id'); // one cart per user
+    t.unique('user_id');
   });
 
   // ── cart_items ────────────────────────────────────────────────
@@ -109,7 +91,7 @@ exports.up = async function (knex) {
     t.integer('variant_id').notNullable().references('id').inTable('product_variants').onDelete('CASCADE');
     t.integer('quantity').notNullable().defaultTo(1);
     t.timestamps(true, true);
-    t.unique(['cart_id', 'variant_id']); // no duplicate rows
+    t.unique(['cart_id', 'variant_id']);
   });
 
   // ── orders ────────────────────────────────────────────────────
@@ -117,13 +99,7 @@ exports.up = async function (knex) {
     t.increments('id').primary();
     t.integer('user_id').notNullable().references('id').inTable('users');
     t.integer('outlet_id').notNullable().references('id').inTable('outlets');
-    t.enu('status', [
-      'confirmed',
-      'preparing',
-      'out_for_delivery',
-      'delivered',
-      'cancelled',
-    ]).notNullable().defaultTo('confirmed');
+    t.enu('status', ['confirmed','preparing','out_for_delivery','delivered','cancelled']).notNullable().defaultTo('confirmed');
     t.decimal('subtotal', 10, 2).notNullable();
     t.decimal('delivery_fee', 8, 2).notNullable().defaultTo(0);
     t.decimal('total', 10, 2).notNullable();
@@ -140,16 +116,33 @@ exports.up = async function (knex) {
     t.increments('id').primary();
     t.integer('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE');
     t.integer('variant_id').notNullable().references('id').inTable('product_variants');
-    t.string('variant_name').notNullable(); // snapshot at time of order
-    t.string('product_name').notNullable(); // snapshot at time of order
-    t.decimal('price', 10, 2).notNullable(); // snapshot at time of order
+    t.string('variant_name').notNullable();
+    t.string('product_name').notNullable();
+    t.decimal('price', 10, 2).notNullable();
     t.integer('quantity').notNullable();
     t.timestamps(true, true);
   });
 
+  // ── banners ───────────────────────────────────────────────────
+  await knex.schema.createTable('banners', (t) => {
+    t.increments('id').primary();
+    t.string('title').notNullable();
+    t.string('subtitle');
+    t.string('cta_label');
+    t.string('cta_link');
+    t.string('bg_color').defaultTo('#00e5a0');
+    t.string('text_color').defaultTo('#0a0a0f');
+    t.string('emoji');
+    t.timestamp('starts_at').notNullable();
+    t.timestamp('ends_at').notNullable();
+    t.boolean('is_active').notNullable().defaultTo(true);
+    t.integer('sort_order').defaultTo(0);
+    t.timestamps(true, true);
+  });
 };
 
 exports.down = async function (knex) {
+  await knex.schema.dropTableIfExists('banners');
   await knex.schema.dropTableIfExists('order_items');
   await knex.schema.dropTableIfExists('orders');
   await knex.schema.dropTableIfExists('cart_items');

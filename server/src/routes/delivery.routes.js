@@ -2,79 +2,40 @@
  * server/src/routes/delivery.routes.js
  * POST /api/v1/delivery/check
  *
- * Validates user lat/lng against PostGIS delivery zones.
- * Returns serviceable outlet, fee, ETA.
+ * PostGIS-free version — uses Haversine distance + ray-casting polygon check
+ * entirely in JavaScript. Works on Railway standard Postgres.
  *
- * Built in Phase 2, Step 2.1.
- * Current implementation: PostGIS ST_Within (free)
- * Future: Google Maps Directions API for road ETA (commented below)
+ * When moving to VPS with PostGIS: see docs/GEO_SWITCH.md
  */
 
 const express = require('express');
 const router  = express.Router();
 const db      = require('../db');
 
-router.post('/check', async (req, res) => {
-  const { lat, lng } = req.body;
+// ── Haversine distance (km) ───────────────────────────────────────
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
 
-  if (typeof lat !== 'number' || typeof lng !== 'number') {
-    return res.status(400).json({ error: 'lat and lng must be numbers.' });
+// ── Ray-casting polygon check ─────────────────────────────────────
+function isPointInPolygon(lat, lng, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [xi, yi] = polygon[i];
+    const [xj, yj] = polygon[j];
+    const intersects = yi > lat !== yj > lat &&
+      lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+    if (intersects) inside = !inside;
   }
+  return inside;
+}
 
-  try {
-    const results = await db.raw(`
-      SELECT
-        o.id,
-        o.name,
-        o.lat,
-        o.lng,
-        ST_Distance(
-          ST_MakePoint(o.lng, o.lat)::geography,
-          ST_MakePoint(:lng, :lat)::geography
-        ) / 1000 AS distance_km
-      FROM outlets o
-      WHERE
-        o.is_active = true
-        AND (
-          (o.delivery_zone IS NOT NULL
-           AND ST_Within(
-             ST_SetSRID(ST_MakePoint(:lng, :lat), 4326),
-             o.delivery_zone
-           ))
-          OR
-          (o.delivery_zone IS NULL
-           AND ST_Distance(
-             ST_MakePoint(o.lng, o.lat)::geography,
-             ST_MakePoint(:lng, :lat)::geography
-           ) / 1000 <= o.delivery_radius_km)
-        )
-      ORDER BY distance_km ASC
-      LIMIT 1
-    `, { lat, lng });
-
-    if (!results.rows.length) {
-      return res.json({ serviceable: false });
-    }
-
-    const outlet      = results.rows[0];
-    const distanceKm  = parseFloat(outlet.distance_km);
-    const deliveryFee = calcDeliveryFee(distanceKm);
-    const etaMinutes  = estimateEta(distanceKm);
-
-    return res.json({
-      serviceable:  true,
-      outlet:       { id: outlet.id, name: outlet.name, lat: outlet.lat, lng: outlet.lng },
-      distance_km:  Math.round(distanceKm * 100) / 100,
-      delivery_fee: deliveryFee,
-      eta_minutes:  etaMinutes,
-    });
-
-  } catch (err) {
-    console.error('[delivery/check]', err);
-    return res.status(500).json({ error: 'Internal server error.' });
-  }
-});
-
+// ── Fee tiers ─────────────────────────────────────────────────────
 function calcDeliveryFee(distanceKm) {
   if (distanceKm <= 2) return 20;
   if (distanceKm <= 5) return 40;
@@ -86,29 +47,73 @@ function estimateEta(distanceKm) {
   return Math.round((distanceKm / 20) * 60 + 5);
 }
 
+// ── POST /delivery/check ──────────────────────────────────────────
+router.post('/check', async (req, res) => {
+  const { lat, lng } = req.body;
+
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    return res.status(400).json({ error: 'lat and lng must be numbers.' });
+  }
+
+  try {
+    const outlets = await db('outlets').where({ is_active: true });
+
+    let best = null;
+
+    for (const outlet of outlets) {
+      const outletLat = parseFloat(outlet.lat);
+      const outletLng = parseFloat(outlet.lng);
+      const distanceKm = haversineKm(lat, lng, outletLat, outletLng);
+
+      let inZone = false;
+
+      // Polygon check if zone exists (stored as JSONB)
+      if (outlet.delivery_zone) {
+        const zone = typeof outlet.delivery_zone === 'string'
+          ? JSON.parse(outlet.delivery_zone)
+          : outlet.delivery_zone;
+        const coords = zone.coordinates?.[0] || zone;
+        if (coords && coords.length >= 3) {
+          inZone = isPointInPolygon(lat, lng, coords);
+        }
+      }
+
+      // Fallback to radius
+      if (!inZone) {
+        inZone = distanceKm <= parseFloat(outlet.delivery_radius_km || 5);
+      }
+
+      if (!inZone) continue;
+
+      if (!best || distanceKm < best.distanceKm) {
+        best = { outlet, distanceKm };
+      }
+    }
+
+    if (!best) {
+      return res.json({ serviceable: false });
+    }
+
+    const fee = calcDeliveryFee(best.distanceKm);
+    const eta = estimateEta(best.distanceKm);
+
+    return res.json({
+      serviceable:  true,
+      outlet: {
+        id:   best.outlet.id,
+        name: best.outlet.name,
+        lat:  best.outlet.lat,
+        lng:  best.outlet.lng,
+      },
+      distance_km:  Math.round(best.distanceKm * 100) / 100,
+      delivery_fee: fee,
+      eta_minutes:  eta,
+    });
+
+  } catch (err) {
+    console.error('[delivery/check]', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 module.exports = router;
-
-// ════════════════════════════════════════════════════════════════
-//  GOOGLE MAPS DIRECTIONS API  (FUTURE — NOT ACTIVE)
-//  npm install @googlemaps/google-maps-services-js
-//  Add GOOGLE_MAPS_KEY to server/.env
-// ════════════════════════════════════════════════════════════════
-
-/*
-const { Client } = require('@googlemaps/google-maps-services-js');
-const googleMapsClient = new Client({});
-
-async function getRoadEta(originLat, originLng, destLat, destLng) {
-  const response = await googleMapsClient.directions({
-    params: {
-      origin:      { lat: originLat, lng: originLng },
-      destination: { lat: destLat,   lng: destLng   },
-      mode:        'driving',
-      key:         process.env.GOOGLE_MAPS_KEY,
-    },
-  });
-  const leg = response.data.routes?.[0]?.legs?.[0];
-  if (!leg) return null;
-  return Math.round(leg.duration.value / 60) + 5; // seconds → minutes + prep
-}
-*/
