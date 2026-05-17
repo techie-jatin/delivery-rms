@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useCart } from '../hooks/useCart.jsx';
 import api from '../services/api/client';
+import { useSocket } from '../hooks/useSocket.js';
 import './Orders.css';
 
 const STATUS_STEPS  = ['confirmed', 'preparing', 'out_for_delivery', 'delivered'];
@@ -24,6 +25,7 @@ export default function Orders() {
   const { user, token } = useAuth();
   const { addItem }     = useCart();
   const navigate        = useNavigate();
+  const socket          = useSocket();
 
   const [orders,    setOrders]    = useState([]);
   const [selected,  setSelected]  = useState(null);
@@ -43,13 +45,30 @@ export default function Orders() {
     loadOrders().finally(() => setLoading(false));
   }, [token]);
 
-  // Poll every 30s for active orders
+  // Subscribe to real-time order updates via Socket.io
   useEffect(() => {
-    const hasActive = orders.some((o) => !['delivered','cancelled'].includes(o.status));
-    if (!hasActive) return;
-    const interval = setInterval(loadOrders, 30000);
-    return () => clearInterval(interval);
-  }, [orders, loadOrders]);
+    if (!socket || !orders.length) return;
+
+    // Subscribe to each active order
+    orders.forEach((order) => {
+      if (!['delivered', 'cancelled'].includes(order.status)) {
+        socket.emit('subscribe:order', order.id);
+      }
+    });
+
+    // Also subscribe to user-level updates
+    if (user?.id) socket.emit('subscribe:user', user.id);
+
+    // Listen for status updates
+    const handleStatusUpdate = ({ orderId, status }) => {
+      setOrders((prev) =>
+        prev.map((o) => o.id === orderId ? { ...o, status } : o)
+      );
+    };
+
+    socket.on('order:status', handleStatusUpdate);
+    return () => socket.off('order:status', handleStatusUpdate);
+  }, [socket, orders.length, user?.id]);
 
   // ── Reorder with 1 tap ────────────────────────────────────────
   async function handleReorder(order) {

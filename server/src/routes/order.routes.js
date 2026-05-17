@@ -12,6 +12,7 @@ const express            = require('express');
 const router             = express.Router();
 const db                 = require('../db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { getIO } = require('../socket');
 
 // ── POST /orders ──────────────────────────────────────────────────
 // Places an order from the user's current cart.
@@ -228,6 +229,13 @@ router.put('/:id/status', requireAdmin, async (req, res) => {
     if (!updated) {
       return res.status(404).json({ error: 'Order not found.' });
     }
+
+    // Emit real-time update to customer
+    try {
+      const io = getIO();
+      io.to(`order:${req.params.id}`).emit('order:status', { orderId: updated.id, status });
+      io.to(`user:${updated.user_id}`).emit('order:status', { orderId: updated.id, status });
+    } catch {} // socket not critical — don't fail the request
 
     return res.json({ order: updated });
   } catch (err) {
