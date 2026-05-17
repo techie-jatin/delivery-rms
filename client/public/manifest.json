@@ -1,0 +1,40 @@
+{
+  "name": "Haat Delivery",
+  "short_name": "Haat",
+  "description": "Groceries delivered in minutes · Kota",
+  "start_url": "/delivery-rms/",
+  "scope": "/delivery-rms/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00e5a0",
+  "lang": "en-IN",
+  "categories": ["food", "shopping"],
+  "icons": [
+    {
+      "src": "/delivery-rms/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/delivery-rms/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Orders",
+      "url": "/delivery-rms/orders",
+      "description": "Track your orders"
+    },
+    {
+      "name": "Shop Now",
+      "url": "/delivery-rms/",
+      "description": "Browse products"
+    }
+  ],
+  "screenshots": []
+}
