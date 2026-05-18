@@ -15,6 +15,7 @@ const NAV = [
   { path: '/admin/outlets',  icon: '📍', label: 'Outlets'   },
   { path: '/admin/zones',    icon: '🗺', label: 'Zones'     },
   { path: '/admin/banners',  icon: '🎉', label: 'Banners'   },
+  { path: '/admin/sellers',  icon: '🏪', label: 'Sellers'   },
 ];
 
 export default function AdminLayout({ children }) {

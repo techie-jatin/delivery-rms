@@ -6,7 +6,21 @@
 const express          = require('express');
 const router           = express.Router();
 const db               = require('../db');
-const { requireAdmin } = require('../middleware/auth');
+const { requireAdmin, requireAuth } = require('../middleware/auth');
+
+// Allow admin OR approved seller to create products
+async function requireAdminOrSeller(req, res, next) {
+  requireAuth(req, res, async () => {
+    if (req.user.role === 'admin') return next();
+    if (req.user.role === 'seller') {
+      const db = require('../db');
+      const seller = await db('sellers').where({ user_id: req.user.id, status: 'approved' }).first();
+      if (seller) { req.seller = seller; return next(); }
+      return res.status(403).json({ error: 'Your seller account is not approved yet.' });
+    }
+    return res.status(403).json({ error: 'Admin or approved seller access required.' });
+  });
+}
 
 router.get('/', async (req, res) => {
   try {
@@ -20,7 +34,7 @@ router.get('/', async (req, res) => {
     if (category) query = query.where('c.slug', category);
     const products = await query;
     const ids = products.map((p) => p.id);
-    const variants = ids.length ? await db('product_variants').whereIn('product_id', ids).where('is_active', true).orderBy('price', 'asc') : [];
+    const variants = ids.length ? await db('product_variants').whereIn('product_id', ids).where('is_active', true) : [];
     const byProduct = {};
     for (const v of variants) {
       if (!byProduct[v.product_id]) byProduct[v.product_id] = [];
@@ -42,7 +56,7 @@ router.get('/:id', async (req, res) => {
   } catch (err) { return res.status(500).json({ error: 'Internal server error.' }); }
 });
 
-router.post('/', requireAdmin, async (req, res) => {
+router.post('/', requireAdminOrSeller, async (req, res) => {
   const { name, slug, brand, description, image_url, category_id, variants } = req.body;
   if (!name || !slug || !category_id) return res.status(400).json({ error: 'name, slug and category_id are required.' });
   if (!variants || !variants.length) return res.status(400).json({ error: 'At least one variant is required.' });
@@ -51,7 +65,11 @@ router.post('/', requireAdmin, async (req, res) => {
   }
   try {
     const result = await db.transaction(async (trx) => {
-      const [product] = await trx('products').insert({ name, slug, brand, description, image_url, category_id }).returning('*');
+      const [product] = await trx('products').insert({
+        name, slug, brand, description, image_url, category_id,
+        // Auto-assign seller_id if created by a seller
+        ...(req.seller ? { seller_id: req.seller.id } : {}),
+      }).returning('*');
       const variantRows = variants.map((v) => ({
         product_id: product.id, name: v.name, sku: v.sku, price: v.price,
         mrp: v.mrp || null, stock: v.stock || 0, max_qty_per_order: v.max_qty_per_order || 10,
