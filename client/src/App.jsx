@@ -16,6 +16,7 @@ import AdminOrders      from './pages/admin/AdminOrders.jsx';
 import AdminProducts    from './pages/admin/AdminProducts.jsx';
 import AdminBanners     from './pages/admin/AdminBanners.jsx';
 import AdminSellers     from './pages/admin/AdminSellers.jsx';
+import AdminRiders      from './pages/admin/AdminRiders.jsx';
 import AdminZoneEditor  from './pages/AdminZoneEditor.jsx';
 
 const Category    = () => <Stub name="Category" phase="3.3" />;
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/admin/products" element={<AdminProducts />} />
         <Route path="/admin/banners"  element={<AdminBanners />} />
         <Route path="/admin/sellers"  element={<AdminSellers />} />
+        <Route path="/admin/riders"   element={<AdminRiders />} />
         <Route path="/admin/zones"    element={<AdminZoneEditor />} />
         <Route path="/admin/outlets"  element={<Stub name="Admin Outlets" phase="4.4" />} />
 

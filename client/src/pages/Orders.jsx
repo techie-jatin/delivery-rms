@@ -176,6 +176,28 @@ export default function Orders() {
                   <div className="order-cancelled">Order was cancelled</div>
                 )}
 
+                {/* OTP — shown when out for delivery */}
+                {order.status === 'out_for_delivery' && order.delivery_otp && (
+                  <div style={{
+                    padding: '12px 14px',
+                    background: 'rgba(0,229,160,0.08)',
+                    border: '1px solid rgba(0,229,160,0.3)',
+                    borderRadius: '8px',
+                    fontFamily: 'var(--font-mono)',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--color-muted)', marginBottom: '4px' }}>
+                      DELIVERY OTP — share with rider
+                    </div>
+                    <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.3em' }}>
+                      {order.delivery_otp}
+                    </div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--color-muted)', marginTop: '4px' }}>
+                      Rider will enter this to confirm delivery
+                    </div>
+                  </div>
+                )}
+
                 {/* Info */}
                 <div className="order-info">
                   <div className="order-info__row"><span>Address</span><span>{order.delivery_address}</span></div>

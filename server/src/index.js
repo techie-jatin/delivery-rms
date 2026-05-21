@@ -28,6 +28,7 @@ app.use('/api/v1/delivery', require('./routes/delivery.routes'));
 app.use('/api/v1/banners',  require('./routes/banner.routes'));
 app.use('/api/v1/payments', require('./routes/payment.routes'));
 app.use('/api/v1/sellers',  require('./routes/seller.routes'));
+app.use('/api/v1/riders',   require('./routes/rider.routes'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
