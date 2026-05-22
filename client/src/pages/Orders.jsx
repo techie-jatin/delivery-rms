@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useCart } from '../hooks/useCart.jsx';
 import api from '../services/api/client';
+import { OrderCardSkeleton } from '../components/ui/Skeleton.jsx';
 import { useSocket } from '../hooks/useSocket.js';
 import './Orders.css';
 
@@ -106,7 +107,14 @@ export default function Orders() {
   }
 
   if (loading) {
-    return <div className="orders-empty"><span className="orders-spinner" /></div>;
+    return (
+      <div className="orders">
+        <div className="orders-header"><h1 className="orders-header__title">Your Orders</h1></div>
+        <div className="orders-list" style={{ gap: '10px', padding: '12px 16px', display: 'flex', flexDirection: 'column' }}>
+          {[1,2,3].map((i) => <OrderCardSkeleton key={i} />)}
+        </div>
+      </div>
+    );
   }
 
   if (orders.length === 0) {

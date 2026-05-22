@@ -9,6 +9,7 @@ import ProductCard from '../components/product/ProductCard.jsx';
 import { fetchOutlets } from '../services/api/outlets';
 import { fetchProducts, fetchCategories } from '../services/api/products';
 import HomeBanner from '../components/ui/HomeBanner.jsx';
+import { ProductCardSkeleton } from '../components/ui/Skeleton.jsx';
 import './Home.css';
 
 export default function Home() {
@@ -89,11 +90,14 @@ export default function Home() {
         )}
 
         {loadingProducts ? (
-          <div className="home-loading" style={{ minHeight: '200px' }}>
-            <span className="home-spinner" />
+          <div className="home-grid">
+            {[1,2,3,4,5,6].map((i) => <ProductCardSkeleton key={i} />)}
           </div>
         ) : visibleProducts.length === 0 ? (
-          <div className="home-empty"><p>No products found.</p></div>
+          <div className="home-empty">
+            <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🛒</div>
+            <p>No products found in this category.</p>
+          </div>
         ) : (
           <div className="home-grid">
             {visibleProducts.flatMap((product) =>

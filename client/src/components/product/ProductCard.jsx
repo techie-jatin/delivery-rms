@@ -7,12 +7,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.jsx';
+import { useToast } from '../ui/Toast.jsx';
 import { useCart } from '../../hooks/useCart.jsx';
 import './ProductCard.css';
 
 export default function ProductCard({ product, variant: variantProp }) {
   const { token } = useAuth();
   const { items, addItem, updateItem } = useCart();
+  const toast = useToast();
 
   // Use passed variant prop, or fall back to first variant
   const variant = variantProp || product.variants?.[0];
@@ -38,15 +40,15 @@ export default function ProductCard({ product, variant: variantProp }) {
 
   async function handleAdd() {
     if (!token) {
-      setFeedback('Login to add items');
-      setTimeout(() => setFeedback(''), 2000);
+      toast.info('Login to add items');
       return;
     }
     setAdding(true);
     const result = await addItem(variant.id, 1, token);
-    if (!result.success) {
-      setFeedback(result.error);
-      setTimeout(() => setFeedback(''), 2000);
+    if (result.success) {
+      toast.success(`${product.name} added to cart`);
+    } else {
+      toast.error(result.error);
     }
     setAdding(false);
   }
@@ -58,8 +60,7 @@ export default function ProductCard({ product, variant: variantProp }) {
 
   async function handleIncrease() {
     if (isMaxQty) {
-      setFeedback(`Max ${variant.max_qty_per_order} per order`);
-      setTimeout(() => setFeedback(''), 2000);
+      toast.error(`Max ${variant.max_qty_per_order} per order`);
       return;
     }
     await handleAdd();
@@ -89,9 +90,6 @@ export default function ProductCard({ product, variant: variantProp }) {
             <span className="pcard__mrp">₹{parseFloat(variant.mrp).toFixed(0)}</span>
           )}
         </div>
-
-        {/* Feedback message */}
-        {feedback && <div className="pcard__feedback">{feedback}</div>}
 
         {/* Add / Qty controls */}
         {isOutOfStock ? (
