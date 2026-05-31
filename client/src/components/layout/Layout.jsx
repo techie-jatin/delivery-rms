@@ -10,8 +10,9 @@
  */
 
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useCart } from '../../hooks/useCart.jsx';
-import { useAuth } from '../../hooks/useAuth.jsx';
+import { useCart } from '../../hooks/useCart';
+import SearchBar from '../ui/SearchBar.jsx';
+import { useAuth } from '../../hooks/useAuth';
 import './Layout.css';
 
 export default function Layout({ children }) {
@@ -59,6 +60,15 @@ export default function Layout({ children }) {
           )}
         </div>
       </header>
+
+      {/* ── Search bar (below header) ── */}
+      <div style={{
+        padding: '8px 16px',
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-border)',
+      }}>
+        <SearchBar />
+      </div>
 
       {/* ── Page content ── */}
       <main className="layout-main">

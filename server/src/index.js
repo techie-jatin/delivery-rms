@@ -29,6 +29,7 @@ app.use('/api/v1/banners',  require('./routes/banner.routes'));
 app.use('/api/v1/payments', require('./routes/payment.routes'));
 app.use('/api/v1/sellers',  require('./routes/seller.routes'));
 app.use('/api/v1/riders',   require('./routes/rider.routes'));
+app.use('/api/v1/search',   require('./routes/search.routes'));
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
@@ -40,6 +41,13 @@ app.use((err, _req, res, _next) => {
 // ── Socket.io ─────────────────────────────────────────────────────
 const { initSocket } = require('./socket');
 initSocket(server);
+
+// ── Meilisearch setup ─────────────────────────────────────────────
+const { setupIndex, syncProducts } = require('./services/search');
+const db = require('./db');
+setupIndex().then(() => syncProducts(db)).catch((err) =>
+  console.warn('[search] Initial sync skipped:', err.message)
+);
 
 // ── Start ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
